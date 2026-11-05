@@ -1,0 +1,2 @@
+# Desktop-Based-Appointment-Scheduling-System-Ercans-Tailoring-Shop-
+Designed to make appointment management easier, faster, and more organized. It allows customers to request appointments by providing their personal information, preferred date and time, and tailoring services needed. The admin can manage bookings, while staff can view their assigned schedules. The system aims to prevent duplicate appointments.
