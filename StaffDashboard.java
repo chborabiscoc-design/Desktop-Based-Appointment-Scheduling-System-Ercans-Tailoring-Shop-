@@ -1,0 +1,493 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ */
+
+    
+
+/**
+ *
+ * @author dayuh
+ */
+public class StaffDashboard extends javax.swing.JFrame {
+    private int staffId;
+private String firstName;
+private String lastName;
+    
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(StaffDashboard.class.getName());
+
+    /**
+     * Creates new form StaffDashboard
+     */
+    public StaffDashboard(int staffId, String firstName, String lastName) {
+    initComponents();
+    jTable1.setSelectionMode(
+    javax.swing.ListSelectionModel.SINGLE_SELECTION
+);
+
+jTable1.getSelectionModel().addListSelectionListener(e -> {
+    if (!e.getValueIsAdjusting()) {
+        updateWorkButtons();
+    }
+});
+    
+    // Hide the Assigned Staff ID column from the table display
+    jTable1.removeColumn(
+        jTable1.getColumnModel().getColumn(9)
+    );
+
+    this.staffId = staffId;
+    this.firstName = firstName;
+    this.lastName = lastName;
+
+    jLabel3.setText("Welcome, " + firstName + " " + lastName + "!");
+
+    setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
+
+jButton1.setEnabled(false);
+jButton2.setEnabled(false);
+
+loadAcceptedAppointments();
+
+    }
+    
+private void loadAcceptedAppointments() {
+String sql = "SELECT a.appointment_id, "
+        + "CONCAT(c.first_name, ' ', c.last_name) AS customer, "
+        + "a.appointment_date, a.appointment_time, "
+        + "s.service_name, a.details, a.appointment_status, "
+        + "a.work_status, "
+        + "COALESCE(CONCAT(st.first_name, ' ', st.last_name), 'Available') "
+        + "AS assigned_staff, a.staff_id "
+        + "FROM appointments a "
+        + "INNER JOIN customers c "
+        + "ON a.customer_id = c.customer_id "
+        + "INNER JOIN Service s "
+        + "ON a.service_id = s.service_id "
+        + "LEFT JOIN staff st "
+        + "ON a.staff_id = st.staff_id "
+        + "WHERE a.appointment_status = 'Accepted' "
+        + "ORDER BY a.appointment_date, a.appointment_time";
+
+try (
+    java.sql.Connection con = DBConnection.getConnection();
+    java.sql.PreparedStatement pst = con.prepareStatement(sql);
+    java.sql.ResultSet rs = pst.executeQuery()
+) {
+
+    javax.swing.table.DefaultTableModel model =
+            (javax.swing.table.DefaultTableModel) jTable1.getModel();
+
+    model.setRowCount(0);
+
+    while (rs.next()) {
+
+        java.sql.Date sqlDate = rs.getDate("appointment_date");
+        String formattedDate = "";
+
+        if (sqlDate != null) {
+            formattedDate = sqlDate.toLocalDate().format(
+                java.time.format.DateTimeFormatter.ofPattern(
+                    "MMMM d, yyyy",
+                    java.util.Locale.ENGLISH
+                )
+            );
+        }
+
+        java.sql.Time sqlTime = rs.getTime("appointment_time");
+        String formattedTime = "";
+
+        if (sqlTime != null) {
+            formattedTime = sqlTime.toLocalTime().format(
+                java.time.format.DateTimeFormatter.ofPattern(
+                    "h:mm a",
+                    java.util.Locale.ENGLISH
+                )
+            );
+        }
+
+        model.addRow(new Object[] {
+            rs.getInt("appointment_id"),
+            rs.getString("customer"),
+            formattedDate,
+            formattedTime,
+            rs.getString("service_name"),
+            rs.getString("details"),
+            rs.getString("appointment_status"),
+            rs.getString("work_status"),
+            rs.getString("assigned_staff"),
+            rs.getObject("staff_id")
+        });
+    }
+
+} catch (java.sql.SQLException e) {
+    javax.swing.JOptionPane.showMessageDialog(
+        this,
+        "Failed to load appointments: " + e.getMessage()
+    );
+}
+
+updateWorkButtons();
+
+}
+
+
+private void updateWorkButtons() {
+   
+    int row = jTable1.getSelectedRow();
+
+    if (row < 0) {
+        jButton1.setEnabled(false);
+        jButton2.setEnabled(false);
+        return;
+    }
+
+    int modelRow = jTable1.convertRowIndexToModel(row);
+    javax.swing.table.TableModel model = jTable1.getModel();
+
+    String workStatus = model.getValueAt(modelRow, 7) == null
+            ? ""
+            : model.getValueAt(modelRow, 7).toString().trim();
+
+    Object assignedId = model.getValueAt(modelRow, 9);
+
+    boolean available =
+            assignedId == null
+            && "Not Started".equalsIgnoreCase(workStatus);
+
+    boolean assignedToMe =
+            assignedId != null
+            && assignedId.toString().equals(String.valueOf(staffId))
+            && "In Progress".equalsIgnoreCase(workStatus);
+
+    jButton2.setEnabled(available);
+    jButton1.setEnabled(assignedToMe);
+
+}
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.ddd
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel1.setBackground(new java.awt.Color(204, 204, 255));
+
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 36)); // NOI18N
+        jLabel1.setText("ERCANS TAILORING SHOP");
+
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jLabel2.setText("STAFF DASHBOARD");
+
+        jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        jLabel3.setText("Welcome, Staff Name!");
+
+        jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel4.setText("Accepted Appointments");
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Appointment ID", "Customer", "Date", "Time", "Service", "Details", "Appointment Status", "Work Status", "Assigned Staff", "Assigned Staff ID"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTable1MouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(jTable1);
+
+        jButton1.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jButton1.setText("WORK COMPLETED");
+        jButton1.addActionListener(this::jButton1ActionPerformed);
+
+        jButton2.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jButton2.setText("START WORK");
+        jButton2.addActionListener(this::jButton2ActionPerformed);
+
+        jButton4.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jButton4.setText("LOGOUT");
+        jButton4.addActionListener(this::jButton4ActionPerformed);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel1))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(432, 432, 432)
+                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 383, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(506, 506, 506)
+                        .addComponent(jLabel3)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                        .addGap(104, 104, 104)
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 383, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(279, 279, 279)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 383, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                        .addGap(104, 104, 104)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1045, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addGap(436, 436, 436)))))
+                .addContainerGap(28, Short.MAX_VALUE))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(497, 497, 497)
+                .addComponent(jLabel4)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addGap(23, 23, 23)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel3)
+                .addGap(29, 29, 29)
+                .addComponent(jLabel4)
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 279, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(26, 26, 26)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(382, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+int row = jTable1.getSelectedRow();
+
+if (row == -1) {
+javax.swing.JOptionPane.showMessageDialog(
+this, "Please select an appointment."
+);
+return;
+}
+
+int modelRow = jTable1.convertRowIndexToModel(row);
+
+int appointmentId = Integer.parseInt(
+jTable1.getModel().getValueAt(modelRow, 0).toString()
+);
+
+String sql = "UPDATE appointments "
++ "SET work_status = 'Completed' "
++ "WHERE appointment_id = ? "
++ "AND appointment_status = 'Accepted' "
++ "AND work_status = 'In Progress' "
++ "AND staff_id = ?";
+
+try (
+java.sql.Connection con = DBConnection.getConnection();
+java.sql.PreparedStatement pst = con.prepareStatement(sql)
+) {
+pst.setInt(1, appointmentId);
+pst.setInt(2, staffId);
+
+
+int updated = pst.executeUpdate();
+
+if (updated > 0) {
+    javax.swing.JOptionPane.showMessageDialog(
+        this, "Work marked as completed!"
+    );
+} else {
+    javax.swing.JOptionPane.showMessageDialog(
+        this,
+        "Only the assigned staff member can complete work that is in progress."
+    );
+}
+
+loadAcceptedAppointments();
+
+
+} catch (java.sql.SQLException e) {
+javax.swing.JOptionPane.showMessageDialog(
+this, "Failed to complete work: " + e.getMessage()
+);
+}
+
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MouseClicked
+ 
+    int row = jTable1.rowAtPoint(evt.getPoint());
+
+    if (row >= 0) {
+        jTable1.setRowSelectionInterval(row, row);
+    }
+
+        
+        updateWorkButtons();
+    }//GEN-LAST:event_jTable1MouseClicked
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+           
+
+    int row = jTable1.getSelectedRow();
+
+    if (row == -1) {
+        javax.swing.JOptionPane.showMessageDialog(
+            this, "Please select an appointment."
+        );
+        return;
+    }
+
+    int modelRow = jTable1.convertRowIndexToModel(row);
+
+    int appointmentId = Integer.parseInt(
+        jTable1.getModel().getValueAt(modelRow, 0).toString()
+    );
+
+    String sql = "UPDATE appointments "
+            + "SET work_status = 'In Progress', staff_id = ? "
+            + "WHERE appointment_id = ? "
+            + "AND appointment_status = 'Accepted' "
+            + "AND work_status = 'Not Started' "
+            + "AND staff_id IS NULL";
+
+    try (
+        java.sql.Connection con = DBConnection.getConnection();
+        java.sql.PreparedStatement pst = con.prepareStatement(sql)
+    ) {
+        pst.setInt(1, staffId);
+        pst.setInt(2, appointmentId);
+
+        int updated = pst.executeUpdate();
+
+        if (updated > 0) {
+            javax.swing.JOptionPane.showMessageDialog(
+                this, "You are now assigned to this appointment!"
+            );
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "This appointment has already been claimed or cannot be started."
+            );
+        }
+
+        loadAcceptedAppointments();
+
+    } catch (java.sql.SQLException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+            this, "Failed to start work: " + e.getMessage()
+        );
+    }
+
+                                
+
+
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+
+    int confirm = javax.swing.JOptionPane.showConfirmDialog(
+        this,
+        "Are you sure you want to log out?",
+        "Confirm Logout",
+        javax.swing.JOptionPane.YES_NO_OPTION
+    );
+
+    if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+        Staff_Login login = new Staff_Login();
+        login.setVisible(true);
+        this.dispose();
+    }
+
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
+            logger.log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(() -> {
+    javax.swing.JOptionPane.showMessageDialog(
+        null, "Please open Staff Login to access the dashboard."
+    );
+});
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable jTable1;
+    // End of variables declaration//GEN-END:variables
+}
